@@ -1,0 +1,46 @@
+{
+  "name": "redidb",
+  "version": "0.1.0",
+  "description": "A Redis-powered tabular database engine for TypeScript. Treat Redis like a primary database with familiar table-like abstractions, filtering, sorting, and transactional operations.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/server/index.ts",
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/redidb.git"
+  },
+  "keywords": [
+    "redis",
+    "database",
+    "typescript",
+    "sdk",
+    "table",
+    "lightweight-db",
+    "fast-db",
+    "kv-store",
+    "upstash"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@fastify/swagger": "^9.4.2",
+    "@fastify/swagger-ui": "^5.2.2",
+    "fastify": "^5.2.1",
+    "fastify-swagger": "^5.2.0",
+    "fastify-swagger-ui": "^1.0.1",
+    "ioredis": "^5.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
