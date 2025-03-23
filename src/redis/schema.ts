@@ -16,6 +16,12 @@ export class SchemaRegistry {
     this.tables[schema.name] = schema;
   }
 
+  static defineMultiple(schemas: Record<string, Omit<TableSchema, "name">>) {
+    for (const [name, def] of Object.entries(schemas)) {
+      this.defineTable({ name, ...def });
+    }
+  }
+
   static getTable(name: string): TableSchema {
     const schema = this.tables[name];
     if (!schema) throw new Error(`Table "${name}" is not defined.`);

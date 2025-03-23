@@ -1,73 +1,111 @@
-# 🔴 RediDB: A Redis-based Tabular Data Engine for TypeScript
+# RedbJS
 
-RediDB is an experimental TypeScript SDK that lets you use Redis like a **primary database** – with familiar database-like features such as:
+🚀 **RedbJS** is a Redis-powered database engine and TypeScript library that allows you to define schemas, insert and query data, apply filters, transactions, JWT authentication, and rate limiting — all inside Redis.
 
-- ✅ Table and column definitions
-- 📝 Record insertions
-- 🔍 Querying with filters and sorting
-- ⚡ Super fast, memory-first access
-- 🔐 Future: Indexes, unique constraints, transactions
+> Use Redis like a real database. Simple, fast, open.
 
-## Why RediDB?
+---
 
-Redis is often seen as "just a cache" – but it’s way more powerful.
+## 🧠 Why RedbJS?
 
-This project aims to **bridge the gap** between classic relational database logic and Redis primitives. Think of it as a minimal Firestore or Supabase built on top of Redis, optimized for speed and scalability.
+Most people only use Redis as a cache. This project proves you can treat Redis like a primary database using data modeling, indexing, filtering, and transactional workflows — without losing the blazing-fast performance Redis is known for.
+
+---
+
+## ✨ Features
+
+- 🗂 Define tables & schemas (like SQL)
+- 🔐 JWT authentication support
+- ⚡ Redis-powered rate limiting
+- 🔍 Query with filters, sorting, and unique constraints
+- 💾 Persistence via Redis snapshots (RDB or AOF)
+- 🧪 Full Swagger API documentation
+- 🚀 Fastify-based backend
+
+---
 
 ## 📁 Project Structure
 
-/src redis/ client.ts // Redis client setup (ioredis) schema.ts // Table definitions & schema registry table.ts // Insert, find, and core operations query.ts // Advanced filtering, ordering (WIP) transaction.ts // Redis transaction helpers (WIP) server/ api.ts // Optional: REST API layer router.ts // Route registration index.ts // Entry point
-
-/tests redis.spec.ts // Unit & integration tests
-
-/examples create-user.ts // Sample usage for inserting user
-
-## Quick Start
-
-```ts
-import { SchemaRegistry, RedisTable } from 'redidb';
-
-SchemaRegistry.defineTable({
-  name: 'users',
-  primaryKey: 'id',
-  columns: {
-    id: 'string',
-    email: 'string',
-    password: 'string',
-    createdAt: 'date',
-  },
-});
-
-await RedisTable.insert('users', {
-  email: 'test@example.com',
-  password: 'hashed-password',
-  createdAt: new Date().toISOString(),
-});
-
-const result = await RedisTable.find('users', {
-  where: { email: 'test@example.com' },
-  orderBy: 'createdAt',
-  order: 'desc',
-  limit: 1,
-});
-
-console.log(result);
-
-🗺 Roadmap
-🔎 Advanced Filtering
-
-📊 SortedSet Indexing
-
-🧱 Unique Constraints
-
-💥 Transaction Support
-
-🌐 API Service Layer
-
-💡 Upstash Integration
-
-💼 SaaS Dashboard
+```
+/src
+  redis/
+    client.ts           # Redis connection instance
+    schema.ts           # Table & column schema system
+    table.ts            # Table operations: insert, update, delete, find
+    query.ts            # Filter logic and query matching
+    transaction.ts      # Redis transactions
+  server/
+    api.ts              # Fastify app definition
+    router.ts           # Route registration
+  auth/
+    jwt.ts              # JWT helper
+    password.ts         # bcrypt helper
+  middleware/
+    auth.ts             # JWT authentication middleware
+    rateLimit.ts        # Redis rate limiter
+  config/
+    env.ts              # .env loader and environment variables
+  index.ts              # App bootstrap
+/tests
+  redis.spec.ts         # Unit tests for Redis operations
+/examples
+  create-user.ts        # Example usage script
 ```
 
-Vision
-The goal is to build a lightweight, scalable, and developer-friendly Redis-powered database system with real use cases in high-traffic environments. In the future, this will also be available as a hosted low-code data engine on platforms like Upstash.
+---
+
+## 🛠 Environment Setup
+
+### Development
+
+Create a `.env.development` file:
+
+```env
+NODE_ENV=development
+PORT=3000
+JWT_SECRET=dev-secret
+REDIS_URL=redis://localhost:6379
+```
+
+Then run:
+
+```bash
+npm install
+npm run dev
+```
+
+---
+
+## 📖 API Documentation
+
+Swagger UI is available at:
+
+```
+http://localhost:3000/docs
+```
+
+You can test:
+
+- Register: `POST /auth/register`
+- Login: `POST /auth/login`
+- Authenticated user: `GET /auth/me`
+- Protected routes with `Authorize` button (JWT required)
+
+---
+
+## 📦 What's Next?
+
+This is the open source version of RedbJS. In the future, we plan to offer:
+
+- A full visual admin panel (RedisMyAdmin)
+- Low-code workflow builder (flows → jobs → events)
+- Multi-tenant auth, roles, and job queues
+- RedbJS Cloud with SLA-backed Redis infrastructure
+
+---
+
+## ❤️ Credits
+
+Inspired by the Redis philosophy: _simple primitives, powerful possibilities._
+
+MIT Licensed · Built with TypeScript

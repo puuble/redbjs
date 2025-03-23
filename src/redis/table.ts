@@ -78,8 +78,6 @@ export class RedisTable {
       if (match) records.push(fullData);
     }
 
-    // sıralama ve limit aynı kalabilir
-
     return records;
   }
 
