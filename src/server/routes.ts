@@ -5,6 +5,8 @@ import { User } from "../shared/types";
 import { hashPassword, comparePassword } from "../auth/password";
 import { authenticate } from "../middleware/authMiddleware";
 import { rateLimit } from "../middleware/rateLimit";
+import { authorizeRole } from "../middleware/authorizeRole";
+import { loginRateLimit } from "../middleware/loginRateLimit";
 
 export default async function userRoutes(app: FastifyInstance) {
   app.get("/protected-endpoint", {
@@ -158,7 +160,9 @@ export default async function userRoutes(app: FastifyInstance) {
 
   app.post(
     "/auth/login",
+
     {
+      preHandler: [loginRateLimit],
       schema: {
         description: "Login and receive a JWT token",
         tags: ["Auth"],
@@ -178,6 +182,13 @@ export default async function userRoutes(app: FastifyInstance) {
             },
           },
           401: {
+            type: "object",
+            properties: {
+              error: { type: "string" },
+            },
+          },
+          429: {
+            description: "Too many requests",
             type: "object",
             properties: {
               error: { type: "string" },
@@ -207,13 +218,18 @@ export default async function userRoutes(app: FastifyInstance) {
       if (!valid)
         return res.status(401).send({ error: "Invalid email or password" });
 
-      const token = JWT.sign({ userId: user.id, email: user.email });
+      const token = JWT.sign({
+        userId: user.id,
+        email: user.email,
+        role: user.role || "user",
+      });
       return { token };
     }
   );
 
   app.post(
     "/auth/register",
+
     {
       schema: {
         description: "Register a new user",
@@ -242,6 +258,13 @@ export default async function userRoutes(app: FastifyInstance) {
               error: { type: "string" },
             },
           },
+          429: {
+            description: "Too many requests",
+            type: "object",
+            properties: {
+              error: { type: "string" },
+            },
+          },
         },
       },
     },
@@ -257,14 +280,109 @@ export default async function userRoutes(app: FastifyInstance) {
           createdAt: new Date().toISOString(),
         })) as User;
 
+        const token = JWT.sign({
+          userId: user.id,
+          email: user.email,
+          role: "user", // 👈 default role
+        });
+
         return {
           id: user.id,
           email: user.email,
           createdAt: user.createdAt,
+          token,
         };
       } catch (err: any) {
         return res.status(400).send({ error: err.message });
       }
+    }
+  );
+  app.get(
+    "/admin/dashboard",
+    {
+      preHandler: [authenticate, authorizeRole("admin")],
+      schema: {
+        description: "Admin-only dashboard",
+        tags: ["Admin"],
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: {
+            description: "Welcome message for admin",
+            type: "object",
+            properties: {
+              message: { type: "string" },
+            },
+          },
+          401: {
+            description: "Not authenticated",
+            type: "object",
+            properties: {
+              error: { type: "string" },
+            },
+          },
+          403: {
+            description: "User does not have admin role",
+            type: "object",
+            properties: {
+              error: { type: "string" },
+            },
+          },
+        },
+      },
+    },
+    async (req, res) => {
+      return { message: "Welcome to admin dashboard" };
+    }
+  );
+
+  app.get(
+    "/auth/me",
+    {
+      preHandler: [authenticate],
+      schema: {
+        description: "Get authenticated user info",
+        tags: ["Auth"],
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: {
+            description: "Successful response",
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              email: { type: "string" },
+              status: { type: "string" },
+              createdAt: { type: "string" },
+            },
+          },
+          401: {
+            description: "Unauthorized",
+            type: "object",
+            properties: {
+              error: { type: "string" },
+            },
+          },
+          404: {
+            description: "User not found",
+            type: "object",
+            properties: {
+              error: { type: "string" },
+            },
+          },
+        },
+      },
+    },
+    async (req, res) => {
+      const userInfo = (req as any).user;
+      if (!userInfo) return res.status(401).send({ error: "Unauthorized" });
+
+      const user = await RedisTable.find<User>("users", {
+        where: [{ field: "id", op: "eq", value: userInfo.userId }],
+        limit: 1,
+      });
+
+      if (!user[0]) return res.status(404).send({ error: "User not found" });
+
+      return user[0];
     }
   );
 }
