@@ -375,7 +375,7 @@ export default async function userRoutes(app: FastifyInstance) {
       const userInfo = (req as any).user;
       if (!userInfo) return res.status(401).send({ error: "Unauthorized" });
 
-      const user = await RedisTable.find<User>("users", {
+      const user = await RedisTable.find("users", {
         where: [{ field: "id", op: "eq", value: userInfo.userId }],
         limit: 1,
       });
